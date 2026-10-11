@@ -25,7 +25,7 @@ A RESTful API for managing a product inventory, built with Node.js, Express, Mon
 
 ## Requirements
 
-- Node.js and npm
+- Node.js 20.13 or later and npm
 - A MongoDB database, either local or MongoDB Atlas
 
 ## Getting started
@@ -33,31 +33,37 @@ A RESTful API for managing a product inventory, built with Node.js, Express, Mon
 1. Clone the repository and enter its directory:
 
    ```bash
-   git clone https://github.com/<your-username>/product-inventory-api.git
+   git clone https://github.com/Faheembukshprog/product-inventory-api.git
    cd product-inventory-api
    ```
 
-2. Install dependencies:
+2. Install the exact dependency versions recorded in the lockfile:
 
    ```bash
-   npm install
+   npm ci
    ```
 
-3. Create your local environment file by copying `.env.example` to `.env`.
+3. Create `.env` from the example once. The example uses local MongoDB and has a placeholder JWT secret. Do not repeat this after editing `.env`, because copying replaces the file.
 
    PowerShell:
 
    ```powershell
-   Copy-Item .env.example .env
+   if (-not (Test-Path .env)) { Copy-Item .env.example .env }
    ```
 
    macOS/Linux:
 
    ```bash
-   cp .env.example .env
+   test -f .env || cp .env.example .env
    ```
 
-4. Edit `.env` and set `MONGO_URI` to your MongoDB connection string and `JWT_SECRET` to a long, random secret. Do not commit `.env`.
+4. Generate a unique JWT secret:
+
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+
+   Put the output in `.env` as `JWT_SECRET=...`. The example configures `MONGO_URI=mongodb://127.0.0.1:27017/product_inventory` for local MongoDB. If you use MongoDB Atlas instead, replace it with your Atlas connection string. Do not commit `.env`.
 
 5. Start the API:
 
@@ -73,6 +79,8 @@ A RESTful API for managing a product inventory, built with Node.js, Express, Mon
 
 By default, the API listens on `http://localhost:5000`. Verify it is running at `GET /health`.
 
+The development command uses Node.js's built-in watch mode, so no separate file-watcher package is needed.
+
 ## Environment variables
 
 | Variable | Description | Default |
@@ -81,7 +89,7 @@ By default, the API listens on `http://localhost:5000`. Verify it is running at 
 | `PORT` | HTTP port | `5000` |
 | `CLIENT_URL` | Allowed CORS origin | `*` |
 | `MONGO_URI` | MongoDB connection string (**required**) | — |
-| `JWT_SECRET` | Secret used to sign JWTs (**set a strong value**) | — |
+| `JWT_SECRET` | Unique random secret used to sign JWTs (**replace the example placeholder**) | — |
 | `JWT_EXPIRES_IN` | Token lifetime | `7d` |
 | `RATE_LIMIT_WINDOW_MS` | Rate-limit window in milliseconds | `900000` |
 | `RATE_LIMIT_MAX` | Maximum requests per IP during the window | `100` |
@@ -169,9 +177,11 @@ The category statistics endpoint returns product count, average price, total sto
 ├── uploads/         # Uploaded product images
 ├── validators/      # Request validation rules
 ├── server.js        # Express application entry point
-└── package.json
+├── package.json
+├── package-lock.json
+└── LICENSE
 ```
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](./LICENSE).
